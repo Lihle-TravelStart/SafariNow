@@ -2,7 +2,7 @@ name: Run SafariNowRepoTest
 
 on:
   schedule:
-    - cron: '0 6,12,18 * * *'  # Runs at 6 AM, 12 PM, and 18 PM UTC every day
+    - cron: '0 6,12,18 * * *'  # Runs at 6 AM, 2 PM, and 10 PM UTC every day
   workflow_dispatch:  # Allows you to trigger manually too
 
 jobs:
@@ -12,11 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up JDK 11 (Adoptium)
+    - name: Set up JDK 22 (Adoptium)
       uses: actions/setup-java@v2
       with:
-        java-version: '11'
-        distribution: 'temurin'  # Use 'temurin' (Adoptium JDK)
+        java-version: '22'    # Specify JDK 22
+        distribution: 'temurin'  # Use 'temurin' for Adoptium JDK
 
     - name: Run SafariNowRepoTest
       run: mvn clean test -Dtest=SafariNowRepoTest
