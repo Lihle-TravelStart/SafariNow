@@ -9,11 +9,15 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.List;
 
-public class SearchPage {
+public class SafariNowHomePage {
     private WebDriver driver;
     WebDriverWait wait;
 
+    public By checkInField = By.xpath("//input[@id='Checkin']");
+    public By checkOutField = By.xpath("//input[@id='Checkout']");
     // Locators
+    private By loginButton = By.xpath("//*[@id='MenuItems']/ul/li[3]/a");
+    private By menuButton = By.xpath("//*[@id='MenuAccount']/a/span");
     public By destinationInput = By.id("SearchFilterFilterSearchTerm"); // Replace with actual locator
     private By checkInDateInput = By.id("check-in"); // Replace with actual locator
     private By checkOutDateInput = By.id("check-out"); // Replace with actual locator
@@ -22,8 +26,10 @@ public class SearchPage {
     private By suggestionItemsLocator = By.xpath("//ul[contains(@class, 'suggestions-list')]/li");
     private By popularAccommodationLocator = By.cssSelector(".popular-accommodations .accommodation-item");
     private By bookOrEnquireButtonLocator = By.xpath(".//button[contains(text(), 'Book Now') or contains(text(), 'Enquire')]");
+    private By suggestResults = By.xpath("//div[normalize-space()='" + "Cape Town" + "']");
                                                  //*[@id="scrollable-dropdown-menu"]/span/div/div/div[2]/div/div[1]
-    public SearchPage(WebDriver driver) {
+
+    public SafariNowHomePage(WebDriver driver) {
         this.driver = driver;
     }
 
@@ -31,18 +37,6 @@ public class SearchPage {
         WebElement destinationField = driver.findElement(destinationInput);
         destinationField.clear();
         destinationField.sendKeys(destination);
-    }
-
-    public void enterCheckInDate(String checkInDate) {
-        WebElement checkInField = driver.findElement(checkInDateInput);
-        checkInField.clear();
-        checkInField.sendKeys(checkInDate);
-    }
-
-    public void enterCheckOutDate(String checkOutDate) {
-        WebElement checkOutField = driver.findElement(checkOutDateInput);
-        checkOutField.clear();
-        checkOutField.sendKeys(checkOutDate);
     }
 
     public void clickSearchButton() {
@@ -82,23 +76,41 @@ public class SearchPage {
 
         System.out.println("Selected property at index: " + propertyIndex);
     }
-    public void selectAutoSuggestion(By inputLocator,String inputText, By suggestionLocator) {
+    public WebElement selectDropdownOption(String optionText) {
+        String xpath = "//*[@id=\"scrollable-dropdown-menu\"]/span/div/div/div[2]/div/div[1]";
+        return driver.findElement(By.xpath(xpath));
+    }
+
+    //*[@id="scrollable-dropdown-menu"]/span/div/div/div[3]/div/div[1]
+
+    public void selectAutoSuggestion(By inputLocator,String inputText) {
         WebElement inputField = driver.findElement(inputLocator);
         inputField.clear();
         inputField.sendKeys(inputText);
 
         // Wait for the auto-suggestions to appear
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(suggestionLocator));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(suggestResults));
 
         // Click on the first suggestion (or you can add logic to select a specific one)
-        List<WebElement> suggestions = driver.findElements(suggestionLocator);
+        List<WebElement> suggestions = driver.findElements(suggestResults);
 
         if (!suggestions.isEmpty()) {
             suggestions.get(0).click();  // Select the first suggestion
         } else {
             System.out.println("No suggestions found for the input: " + inputText);
         }
+    }
+    public void clickLoginButton() {
+        WebElement loginBtn = driver.findElement(loginButton);
+        loginBtn.click();
+    }
+    public void clickmenuButton() {
+        WebElement menuBtn = driver.findElement(menuButton);
+        menuBtn.click();
+    }
+    public void navigateToOtherURL(String url) {
+        driver.navigate().to(url);
     }
     }
 
