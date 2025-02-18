@@ -5,27 +5,26 @@ import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import method.Method;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import method.Methods;
 
 public class TestReport {
 
-    static Method method = new Method();
-    static ExcelTestReport excelTestReport = new ExcelTestReport();
+    static Methods method = new Methods();
     static HtmlTestReport htmlTestReport = new HtmlTestReport();
 
-    public void updateTestResult(List<String[]> testResultInfo, WebDriver driver, String testScenarioID, String testCaseID, String testCaseSummary, String correlationID, boolean testValidationBoolValue) {
+    public void updateTestResult(List<String[]> testResultInfo, WebDriver driver, String testScenarioID, String testCaseID, String testCaseSummary, String correlationID, String bookinhReference, String failMessage, boolean testValidationBoolValue) {
         String testRunStatus;
         String screenShotPath = takeScreenshotIfFailed(driver, testScenarioID, testCaseID, testValidationBoolValue);
 
         testRunStatus = testValidationBoolValue ? "pass" : "fail";
 
-        String[] testResultsArray = {testScenarioID, testCaseID, testCaseSummary, testRunStatus, correlationID, screenShotPath};
+        String[] testResultsArray = {testScenarioID, testCaseID, testCaseSummary, testRunStatus, correlationID, bookinhReference, failMessage, screenShotPath};
         testResultInfo.add(testResultsArray);
 
     }
@@ -37,10 +36,8 @@ public class TestReport {
 
         for (String[] testDetails : localCopy) {
 
-            htmlTestReport.writeTestReport(testDetails[0], testDetails[1], testDetails[2], testDetails[3], testDetails[4]);
-            excelTestReport.writeTestReport(testDetails[0], testDetails[1], testDetails[2], testDetails[3], testDetails[4]);
+            htmlTestReport.writeTestReport(testDetails[0], testDetails[1], testDetails[2], testDetails[3], testDetails[4], testDetails[5], testDetails[6]);
 
-            System.out.println("Test report data" +(testDetails[0]+"  "+ testDetails[1]+"  "+  testDetails[2]+"  "+  testDetails[3]+"  "+  testDetails[4]));
         }
         testReportList.clear();
     }
@@ -50,8 +47,6 @@ public class TestReport {
         String testExcelReportPath = "";
         String testHtmlReportPath = "";
 
-        // Save the Excel report after the test run
-        testExcelReportPath = excelTestReport.saveExcelReport();
         testHtmlReportPath = htmlTestReport.saveHTMLReport();
 
         Thread.sleep(1000);

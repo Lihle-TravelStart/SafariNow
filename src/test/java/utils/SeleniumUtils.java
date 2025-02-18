@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.Properties;
 
 public class SeleniumUtils {
+
     private static WebDriver driver;
     private static Properties properties = new Properties();
     private static final int DEFAULT_TIMEOUT = 10;
-
+    public SeleniumUtils(WebDriver driver) {
+        this.driver = driver;
+    }
 
     // --- WAIT METHODS ---
     public static void waitForVisibility(By locator, int timeoutInSeconds) {
@@ -24,7 +27,8 @@ public class SeleniumUtils {
 
     public static void waitForElementToBeClickable(By locator, int timeoutInSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
+        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        element.click();
     }
 
     // --- ELEMENT INTERACTION METHODS ---
@@ -66,13 +70,32 @@ public class SeleniumUtils {
     }
 
     // --- CONFIGURATION LOADER ---
-    static {
-        try {
-            FileInputStream fileInputStream = new FileInputStream("config.properties");
-            properties.load(fileInputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//    static {
+//        try {
+//            FileInputStream fileInputStream = new FileInputStream("config.properties");
+//            properties.load(fileInputStream);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+    public boolean isImageLoaded(WebElement  imageLocator, int timeoutSeconds) {
+        WebElement image = driver.findElement((By) imageLocator);
+        JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
+
+        // Execute JS to check if the image is loaded
+        Boolean isLoaded = (Boolean) jsExecutor.executeScript(
+                "return arguments[0].complete && arguments[0].naturalWidth > 0", image);
+
+        return isLoaded != null && isLoaded;
+    }
+    public void checkNextImageLoaded(By nextButtonLocator, By imageLocator) {
+        // Click the Next button
+        WebElement nextButton = driver.findElement(nextButtonLocator);
+        nextButton.click();
+
+        // Wait for the next image to load
+        isImageLoaded((WebElement) imageLocator, 10);
+        System.out.println("Next image is loaded.");
     }
 
     public static String getConfigProperty(String key) {

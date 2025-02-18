@@ -10,7 +10,6 @@ public class DriverManager {
 
     public static WebDriver getDriver() {
         if (driver == null) {
-            // Initialize driver here, for example:
             WebDriverManager.chromedriver().setup();
             driver = new ChromeDriver();
             driver.manage().window().maximize();
