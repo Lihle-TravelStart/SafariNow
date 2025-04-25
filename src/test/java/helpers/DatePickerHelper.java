@@ -4,13 +4,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-public class datePicker {
+public class DatePickerHelper {
     private WebDriver driver;
 
     private By monthYearDisplay = By.xpath("//div[@class='ui-datepicker-title']");
     private By nextButton = By.xpath("//span[@class='ui-icon ui-icon-circle-triangle-e']");
 
-    public datePicker(WebDriver driver) {
+    public DatePickerHelper(WebDriver driver) {
         this.driver = driver;
     }
 

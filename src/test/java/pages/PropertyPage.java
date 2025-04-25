@@ -1,7 +1,6 @@
 package pages;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -33,6 +32,13 @@ public class PropertyPage {
         this.driver = driver;
     }
 
+    // public By availabilityMessage = By.cssSelector(".availability-message");
+    // Carousel Locators (Add these)
+    public By carouselContainer = By.id("property-image-carousel"); // Example: Adjust to your carousel's container
+    public By nextButton = By.cssSelector(".carousel-control-next"); // Example: Adjust to your "next" button
+    public By prevButton = By.cssSelector(".carousel-control-prev"); // Example: Adjust to your "previous" button
+    public By carouselImages = By.cssSelector(".carousel-item img"); // Example: Adjust to your image elements
+    public String activeImageClass = "active"; // Example: The class added to the active image
     public void verifyPageTitle(String expectedTitle) {
         String actualTitle = driver.getTitle();
         if (actualTitle.equalsIgnoreCase(expectedTitle)) {

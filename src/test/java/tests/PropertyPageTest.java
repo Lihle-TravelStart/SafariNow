@@ -1,15 +1,14 @@
 package tests;
 
+import helpers.DatePickerHelper;
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import pages.SafariNowHomePage;
-import pages.PropertyPage;
 import pages.AccomodationListPage;
-import helpers.datePicker;
-//import pages.SearchPage;
+import pages.PropertyPage;
+import pages.SafariNowHomePage;
 import utils.DriverManager;
 import utils.SeleniumUtils;
 import utils.WaitUtils;
@@ -22,7 +21,7 @@ public class PropertyPageTest {
     private WaitUtils waitUtils;
     private SafariNowHomePage homePage;
     private AccomodationListPage accomodationListPage;
-    private datePicker help;
+    private DatePickerHelper help;
     @BeforeClass
     public void setup() {
         driver = DriverManager.getDriver(); // Initialize WebDriver
@@ -30,7 +29,7 @@ public class PropertyPageTest {
         propertyPage = new PropertyPage(driver);
         homePage = new SafariNowHomePage(driver);
         accomodationListPage = new AccomodationListPage(driver);
-        help = new datePicker(driver);
+        help = new DatePickerHelper(driver);
     }
 
     @Test
