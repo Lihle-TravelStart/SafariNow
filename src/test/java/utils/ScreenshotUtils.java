@@ -14,7 +14,7 @@ public class ScreenshotUtils {
     public static String takeScreenshot(WebDriver driver, String screenshotName) {
         TakesScreenshot ts = (TakesScreenshot) driver;
         File source = ts.getScreenshotAs(OutputType.FILE);
-        String destination = "./screenshots/" + screenshotName + ".png";
+        String destination = STR."./screenshots/\{screenshotName}.png";
         try {
             Files.copy(source.toPath().toFile(), (OutputStream) Paths.get(destination));
         } catch (IOException e) {

@@ -26,18 +26,20 @@ public class ExtentReportListener implements ITestListener {
 
     @Override
     public void onTestSuccess(ITestResult result) {
-        test.pass("Test passed");
-
+        String testSummary = (String) result.getAttribute("testSummary");
+        test.pass(testSummary);
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-        test.fail(result.getThrowable());
+        String testSummary = (String) result.getAttribute("testSummary");
+        test.fail(result.getThrowable()).getModel().setDescription(testSummary);
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
-        test.skip(result.getThrowable());
+        String testSummary = (String) result.getAttribute("testSummary");
+        test.skip(result.getThrowable()).getModel().setDescription(testSummary);
     }
 
     @Override
