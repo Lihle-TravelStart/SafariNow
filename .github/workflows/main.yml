@@ -2,10 +2,8 @@ name: Run SafariNowRepoTest
 
 on:
   schedule:
-    # Runs at 6 AM, 12 PM, and 6 PM UTC every day.
-    # Note: UTC time. Adjust for your desired local time if needed.
     - cron: '0 6,12,18 * * *'
-  workflow_dispatch: # Allows you to trigger manually too
+  workflow_dispatch:
 
 jobs:
   test:
@@ -14,23 +12,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Install Chrome browser
     - name: Install Google Chrome
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt install -y ./google-chrome-stable_current_amd64.deb
+
+    - name: Install Xvfb
+      run: sudo apt-get install -y xvfb
 
     - name: Set up JDK 22 (Temurin)
       uses: actions/setup-java@v2
       with:
         java-version: '22'
-        distribution: 'temurin' # Use 'temurin' for Adoptium JDK
+        distribution: 'temurin'
 
     - name: Run SafariNowRepoTest
-      # The xvfb-run command is crucial for running headless browser tests
-      # It provides a virtual display for Chrome to run in.
-      # We also pass Chrome options to run in headless mode and disable GPU.
-      # The --no-sandbox is often required in CI/CD environments.
-      # For the 'user-data-dir' issue, we'll configure ChromeOptions in the Java code.
       run: |
-        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest
+        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview"
