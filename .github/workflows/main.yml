@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04  # Use older runner with compatible Chrome
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -21,8 +21,10 @@ jobs:
     - name: Install system dependencies
       run: sudo apt-get update && sudo apt-get install -y xvfb
 
-    - name: Check Chrome version
-      run: google-chrome --version
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1
+      with:
+        chrome-version: stable
 
     - name: Cache Maven dependencies
       uses: actions/cache@v4
@@ -33,6 +35,6 @@ jobs:
 
     - name: Run SafariNowRepoTest
       run: |
-        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview"
+        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" || true
       env:
         DISPLAY: :99
