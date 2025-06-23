@@ -26,6 +26,13 @@ jobs:
       with:
         chrome-version: stable
 
+    - name: Check versions
+      run: |
+        echo "Chrome version:"
+        google-chrome --version
+        echo "Java version:"
+        java -version
+
     - name: Cache Maven dependencies
       uses: actions/cache@v4
       with:
@@ -35,6 +42,13 @@ jobs:
 
     - name: Run SafariNowRepoTest
       run: |
-        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" || true
+        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" -Dmaven.test.failure.ignore=false
       env:
         DISPLAY: :99
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: target/surefire-reports/
