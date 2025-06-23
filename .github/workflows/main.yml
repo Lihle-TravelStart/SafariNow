@@ -21,10 +21,18 @@ jobs:
     - name: Install system dependencies
       run: sudo apt-get update && sudo apt-get install -y xvfb
 
-    - name: Setup Chrome
-      uses: browser-actions/setup-chrome@v1
-      with:
-        chrome-version: '131.0.6778.204'  # Compatible version
+    - name: Remove existing Chrome and install compatible version
+      run: |
+        # Remove any existing Chrome
+        sudo apt-get remove -y google-chrome-stable || true
+        sudo apt-get autoremove -y
+        
+        # Install Chrome 119 (known compatible with Selenium 4.21.0)
+        wget -q https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_119.0.6045.199-1_amd64.deb
+        sudo dpkg -i google-chrome-stable_119.0.6045.199-1_amd64.deb || sudo apt-get -f install -y
+        
+        # Verify version
+        google-chrome --version
 
     - name: Cache Maven dependencies
       uses: actions/cache@v4
