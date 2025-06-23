@@ -12,23 +12,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Xvfb
-      run: sudo apt-get update && sudo apt-get install -y xvfb unzip
+    - name: Install Xvfb and dependencies
+      run: sudo apt-get update && sudo apt-get install -y xvfb unzip wget curl gnupg2
 
-    - name: Install stable Chrome & matching ChromeDriver
+    - name: Install Chrome 124
       run: |
-        # Install specific version of Chrome
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
+        wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_124.0.6367.207-1_amd64.deb
+        sudo dpkg -i google-chrome-stable_124.0.6367.207-1_amd64.deb || sudo apt-get -f install -y
 
-        # Extract Chrome version
-        CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
-
-        # Get matching ChromeDriver version
-        DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-
-        # Download and install matching ChromeDriver
-        wget -O chromedriver.zip "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
+    - name: Install ChromeDriver 124
+      run: |
+        wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/124.0.6367.207/chromedriver_linux64.zip
         unzip chromedriver.zip
         sudo mv chromedriver /usr/local/bin/
         chromedriver --version
