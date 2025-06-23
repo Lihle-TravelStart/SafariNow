@@ -23,7 +23,7 @@ jobs:
 
     - name: Use WebDriverManager CLI (v5.3.2) to install matching ChromeDriver
       run: |
-        wget https://github.com/bonigarcia/webdrivermanager/releases/download/webdrivermanager-5.3.2/webdrivermanager-5.3.2.jar
+        wget https://repo1.maven.org/maven2/io/github/bonigarcia/webdrivermanager/5.9.2/webdrivermanager-5.9.2.jar
         java -jar webdrivermanager-5.3.2.jar chromedriver --matching --force
         chromedriver --version
 
