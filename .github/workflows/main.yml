@@ -1,4 +1,4 @@
-name: Run SafariNowRepoTest
+name: Run SafariNowRepoTest (With Cache)
 
 on:
   schedule:
@@ -10,29 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y xvfb unzip wget curl gnupg2
-
-    - name: Install latest Chrome
-      run: |
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
-        google-chrome --version
-
-    - name: Use WebDriverManager CLI (v5.3.2) to install matching ChromeDriver
-      run: |
-        wget https://repo1.maven.org/maven2/io/github/bonigarcia/webdrivermanager/5.9.2/webdrivermanager-5.9.2.jar
-        java -jar webdrivermanager-5.9.2.jar chromedriver --matching --force
-        chromedriver --version
+    - uses: actions/checkout@v4
 
     - name: Set up JDK 22 (Temurin)
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         java-version: '22'
         distribution: 'temurin'
 
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Install xvfb for headless display
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+
     - name: Run SafariNowRepoTest
       run: |
         xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview"
+      env:
+        DISPLAY: :99
