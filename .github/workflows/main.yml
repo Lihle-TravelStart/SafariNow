@@ -12,15 +12,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Xvfb and dependencies
-      run: sudo apt-get update && sudo apt-get install -y xvfb unzip wget curl gnupg2
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y xvfb unzip curl wget gnupg2
 
-    - name: Install Chrome 124
+    - name: Install Chrome 124 via repo pinning
       run: |
-        wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_124.0.6367.207-1_amd64.deb
-        sudo dpkg -i google-chrome-stable_124.0.6367.207-1_amd64.deb || sudo apt-get -f install -y
+        curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable=124.0.6367.207-1
+        google-chrome --version
 
-    - name: Install ChromeDriver 124
+    - name: Install matching ChromeDriver 124
       run: |
         wget -O chromedriver.zip https://chromedriver.storage.googleapis.com/124.0.6367.207/chromedriver_linux64.zip
         unzip chromedriver.zip
