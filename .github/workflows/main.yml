@@ -21,6 +21,11 @@ jobs:
     - name: Install system dependencies
       run: sudo apt-get update && sudo apt-get install -y xvfb
 
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@v1
+      with:
+        chrome-version: '131.0.6778.204'  # Compatible version
+
     - name: Cache Maven dependencies
       uses: actions/cache@v4
       with:
