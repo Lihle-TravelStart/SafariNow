@@ -33,15 +33,11 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    - name: Run SafariNowRepoTest (Skip failing tests for now)
+    - name: Run SafariNowRepoTest
       run: |
-        xvfb-run -a mvn clean test -Dtest='!SafariNowRepoTest' -DargLine="--enable-preview"
+        xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" -Dmaven.test.failure.ignore=false
       env:
         DISPLAY: :99
-
-    - name: Run compilation check
-      run: |
-        mvn clean compile test-compile
 
     - name: Upload test results
       if: always()
