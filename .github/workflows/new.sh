@@ -1,0 +1,1 @@
+xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" -Dmaven.test.failure.ignore=false

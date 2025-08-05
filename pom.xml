@@ -15,7 +15,6 @@
         <!-- Updated versions for Chrome 137 compatibility -->
         <selenium.version>4.27.0</selenium.version>
         <webdrivermanager.version>5.9.2</webdrivermanager.version>
-        <junit.version>5.11.0</junit.version>
         <testng.version>7.10.2</testng.version>
         <slf4j.version>2.0.16</slf4j.version>
         <extentreports.version>5.1.2</extentreports.version>
