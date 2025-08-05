@@ -1,7 +1,6 @@
 package pages;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -9,92 +8,120 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Represents the Accommodation List Page (search results page).
- * This class encapsulates the elements and actions available on this page,
- * such as interacting with date filters or selecting a property.
+ * Encapsulates all elements and actions for the accommodation search results list page.
+ * This version uses precise locators and a robust, defensive waiting strategy for stability.
  */
 public class AccomodationListPage {
 
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    // --- Locators (using @FindBy for consistency and encapsulation) ---
-
-    @FindBy(id = "Checkin") // Using ID is more stable than XPath if available
-    private WebElement checkInDateInput;
-
-    @FindBy(id = "Checkout")
-    private WebElement checkOutDateInput;
-
-    // This is a more practical locator for this page: the list of property cards.
-    // IMPORTANT: The selector ".establishment-card-container" is an example.
-    // You must replace it with the actual, stable CSS selector for your property cards.
-    @FindBy(css = ".establishment-card-container")
-    private List<WebElement> propertyCards;
+    @FindBy(tagName = "h1")
+    private WebElement pageHeader;
 
     // --- Constructor ---
 
     public AccomodationListPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        // This initializes all elements annotated with @FindBy
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
         PageFactory.initElements(driver, this);
     }
 
-    // --- Action Methods ---
+    // --- Page Actions & Verifications ---
 
-    /**
-     * Enters a date into the check-in date field after ensuring it is visible.
-     * @param checkInDate The date string to enter (e.g., "2025-01-20").
-     */
-    public void enterCheckInDate(String checkInDate) {
-        wait.until(ExpectedConditions.visibilityOf(checkInDateInput));
-        checkInDateInput.clear();
-        checkInDateInput.sendKeys(checkInDate);
+    public String getPageHeaderText() {
+        return wait.until(ExpectedConditions.visibilityOf(pageHeader)).getText();
     }
 
-    /**
-     * Enters a date into the check-out date field after ensuring it is visible.
-     * @param checkOutDate The date string to enter (e.g., "2025-01-25").
-     */
-    public void enterCheckOutDate(String checkOutDate) {
-        wait.until(ExpectedConditions.visibilityOf(checkOutDateInput));
-        checkOutDateInput.clear();
-        checkOutDateInput.sendKeys(checkOutDate);
+    public List<WebElement> getPropertyCards() {
+        By propertyCardLocator = By.xpath("//div[contains(@class, 'content-accommodation')]/..");
+        System.out.println("Waiting for property cards to be present on the page using the correct locator...");
+        List<WebElement> cards = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(propertyCardLocator));
+        if (!cards.isEmpty()) {
+            wait.until(ExpectedConditions.visibilityOf(cards.get(0)));
+        }
+        System.out.println(STR."✓ Found \{cards.size()} property cards on the page.");
+        return cards;
     }
 
-    /**
-     * Clicks on the first property in the search results list to navigate to its details page.
-     * This is a crucial method for creating end-to-end test flows.
-     * Throws a RuntimeException if no properties are found or the first one is not clickable.
-     */
     public void selectFirstProperty() {
-        try {
-            // Wait until at least one property card is visible and clickable
-            wait.until(d -> !propertyCards.isEmpty() && propertyCards.get(0).isDisplayed());
-            wait.until(ExpectedConditions.elementToBeClickable(propertyCards.get(0))).click();
-            System.out.println("Clicked on the first property in the accommodation list.");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to select the first property from the accommodation list.", e);
+        System.out.println("Waiting for property cards to become available to select...");
+        List<WebElement> propertyCards = getPropertyCards();
+
+        if (!propertyCards.isEmpty()) {
+            System.out.println("Selecting the first property from the results list.");
+            propertyCards.get(0).click();
+            System.out.println("✓ Clicked the first property in the list.");
+        } else {
+            throw new IllegalStateException("No properties found in the list to select.");
         }
     }
 
-    // --- Verification Methods ---
+    public String getPropertyName(WebElement card) {
+        return card.findElement(By.cssSelector("h3 > a.hub-title")).getText();
+    }
+
+    public List<WebElement> findPropertyImages(WebElement card) {
+        return card.findElements(By.cssSelector("img[data-src]"));
+    }
+
+    public Optional<WebElement> findOriginalPrice(WebElement card) {
+        return card.findElements(By.cssSelector(".price-struck, .linethrough")).stream().findFirst();
+    }
+
+    public Optional<WebElement> findDiscountedPrice(WebElement card) {
+        return card.findElements(By.cssSelector(".price-no-special, .price-special")).stream().findFirst();
+    }
+
+    public Optional<WebElement> findDiscountPercentage(WebElement card) {
+        return card.findElements(By.cssSelector(".starburst span, .special-tag")).stream().findFirst();
+    }
+
+    public int getTotalResultsCount() {
+        By summaryLocator = By.cssSelector("div.l-fl.l-pad-r-m");
+        WebElement summaryElement = wait.until(ExpectedConditions.visibilityOfElementLocated(summaryLocator));
+        String summaryText = summaryElement.getText(); // e.g., "2400+ accommodation listings..."
+        Pattern pattern = Pattern.compile("(\\d+)");
+        Matcher matcher = pattern.matcher(summaryText);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        throw new IllegalStateException("Could not parse total results count from text: " + summaryText);
+    }
 
     /**
-     * Verifies if the current page title matches the expected title.
-     * This method is now useful for assertions in a test.
-     * @param expectedTitle The title you expect the page to have.
-     * @return true if the title matches (case-insensitive), false otherwise.
+     * REFACTORED: Applies a filter by clicking the associated clickable element (link or checkbox).
+     * This method uses a robust, combined XPath to handle multiple HTML structures.
+     * @param filterLabel The visible text of the filter you want to apply (e.g., "Swimming Pool", "Special Deals Only").
      */
-    public boolean isPageTitleCorrect(String expectedTitle) {
-        // Wait for the title to contain a part of the expected text, which is more robust
-        // than waiting for the full title, which might load slowly.
-        if (wait.until(ExpectedConditions.titleContains(expectedTitle))) {
-            return driver.getTitle().equalsIgnoreCase(expectedTitle);
+    public void applyFilterByLabel(String filterLabel) {
+        // This new XPath looks for an <a> tag containing the text OR an <input> associated with a <label> containing the text.
+        // This handles both link-based filters and checkbox-based filters.
+        String universalFilterXPath = String.format(
+                "//a[contains(., '%1$s') and contains(@class, 'lnk-filter')] | //input[@id = //label[contains(., '%1$s')]/@for]",
+                filterLabel
+        );
+        By filterLocator = By.xpath(universalFilterXPath);
+
+        System.out.println(STR."Attempting to apply filter: '\{filterLabel}' with new universal locator.");
+
+        // First, wait for the element to be present in the DOM and scroll to it.
+        WebElement filterElement = wait.until(ExpectedConditions.presenceOfElementLocated(filterLocator));
+        try {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", filterElement);
+            Thread.sleep(250); // Small pause for scrolling to complete
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-        return false;
+
+        // Now, wait for it to be clickable and click it.
+        wait.until(ExpectedConditions.elementToBeClickable(filterElement)).click();
+
+        System.out.println(STR."✓ Clicked filter: '\{filterLabel}'");
     }
 }

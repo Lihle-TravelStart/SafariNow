@@ -1,115 +1,124 @@
 package pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.List;
+import java.time.Duration;
 
+/**
+ * Encapsulates all elements and actions for a single property's detail page.
+ * This class provides methods to interact with date pickers, room selection,
+ * and booking/quote actions in a stable and reusable way.
+ */
 public class PropertyPage {
 
-    private WebDriver driver;
-    WebDriverWait wait;
+    private final WebDriverWait wait;
 
-    public By requestQoute = By.xpath("//a[@class='pointer btn-blue go-sticky-raq-button']");
-    public By BookNow = By.xpath("//a[@class='seeinstantbook btn-green go-sticky-book-now-button']");
-    public By propertyName = By.xpath("//h1[normalize-space()='TwentyFour 17 Inn']");
-    public By fromPrice = By.xpath("//div[@data-bind='visible: !$root.hasDates() || !$root.hasAvailableRooms()']//div[@class='custom-lp-price-wrapper e-price']");
-    public By propertyImage = By.cssSelector("div[class='carousel-item active'] img[alt='TwentyFour 17 Inn']");
-    public By checkInField = By.xpath("//input[@id='dp1733828277904']");
-    public By checkOutField = By.xpath("//input[@id='dp1733828277905']");
-    public By roomsDropdown = By.id("rooms-dropdown");
-    public By checkAvailabilityButton = By.xpath("//button[text()='Check Availability']");
-    public By bookNowButton = By.xpath("//button[contains(@class, 'btn-green') and text()='Book Now']");
-    public By requestQuoteButton = By.xpath("//button[contains(@class, 'btn-blue') and text()='Request Quote']");
-    public By roomCard = By.cssSelector(".room-card"); // Assuming each room listing is within this element.
-    public By roomNames = By.cssSelector(".room-name");
-    public By roomImages = By.cssSelector(".room-image img");
-    public By moreButton = By.xpath("//a[contains(text(), 'More')]");
-    public By availabilityMessage = By.cssSelector(".availability-message");
+    // --- Web Elements ---
+
+    // The main heading of the property page, which serves as its title.
+    @FindBy(tagName = "h1")
+    private WebElement pageTitleHeader;
+
+    // The button to trigger the availability check after setting dates/rooms.
+    @FindBy(id = "btnCheckAvailability")
+    private WebElement checkAvailabilityButton;
+
+    // The button to proceed with an instant booking.
+    @FindBy(id = "btnBookNow")
+    private WebElement bookNowButton;
+
+    // The button to request a quote instead of booking instantly.
+    @FindBy(id = "btnRequestQuote")
+    private WebElement requestQuoteButton;
+
+    // A container that appears after a successful availability check, holding room details.
+    @FindBy(css = ".room-details-container")
+    private WebElement roomDisplayedContainer;
+
+    // --- Constructor ---
+
     public PropertyPage(WebDriver driver) {
-        this.driver = driver;
+        // Use a longer wait time for property pages as they can be content-heavy.
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        PageFactory.initElements(driver, this);
     }
 
-    // public By availabilityMessage = By.cssSelector(".availability-message");
-    // Carousel Locators (Add these)
-    public By carouselContainer = By.id("property-image-carousel"); // Example: Adjust to your carousel's container
-    public By nextButton = By.cssSelector(".carousel-control-next"); // Example: Adjust to your "next" button
-    public By prevButton = By.cssSelector(".carousel-control-prev"); // Example: Adjust to your "previous" button
-    public By carouselImages = By.cssSelector(".carousel-item img"); // Example: Adjust to your image elements
-    public String activeImageClass = "active"; // Example: The class added to the active image
-    public void verifyPageTitle(String expectedTitle) {
-        String actualTitle = driver.getTitle();
-        if (actualTitle.equalsIgnoreCase(expectedTitle)) {
-            System.out.println("Title matches: " + actualTitle);
-        } else {
-            System.out.println("Title does not match. Expected: " + expectedTitle + ", Actual: " + actualTitle);
+    // --- Page Actions & Verifications ---
+
+    /**
+     * Retrieves the main title of the property page from its <h1> header.
+     * It waits for the header to be visible before returning its text.
+     *
+     * @return The text of the page's main title.
+     */
+    public String getPageTitle() {
+        System.out.println("Waiting for property page title to be visible...");
+        String title = wait.until(ExpectedConditions.visibilityOf(pageTitleHeader)).getText();
+        System.out.println(STR."✓ Page title is: '\{title}'");
+        return title;
+    }
+
+    /**
+     * A placeholder for the complex logic of selecting a room configuration.
+     * This would typically involve clicking a dropdown and selecting an option.
+     *
+     * @param roomConfiguration The desired room setup (e.g., "1 Room, 2 Adults").
+     */
+    public void selectRoom(String roomConfiguration) {
+        // In a real-world scenario, this would involve interacting with the rooms dropdown.
+        // For now, we log the action as a placeholder.
+        // Example: driver.findElement(By.id("rooms-dropdown")).click();
+        //          driver.findElement(By.xpath(String.format("//li[text()='%s']", roomConfiguration))).click();
+        System.out.println(STR."Placeholder: Selecting room configuration '\{roomConfiguration}'.");
+    }
+
+    /**
+     * Clicks the 'Check Availability' button after dates and rooms have been set.
+     * Waits for the button to be clickable before acting.
+     */
+    public void clickCheckAvailability() {
+        System.out.println("Waiting for 'Check Availability' button to be clickable...");
+        wait.until(ExpectedConditions.elementToBeClickable(checkAvailabilityButton)).click();
+        System.out.println("✓ Clicked 'Check Availability' button.");
+    }
+
+    /**
+     * Verifies if the room details section is displayed after an availability check.
+     *
+     * @return true if the room container is visible, false otherwise.
+     */
+    public boolean isRoomDisplayed() {
+        try {
+            System.out.println("Checking for the presence of the room details container...");
+            return wait.until(ExpectedConditions.visibilityOf(roomDisplayedContainer)).isDisplayed();
+        } catch (Exception e) {
+            System.err.println("Room details container was not found or not visible.");
+            return false;
         }
     }
 
-
-
-    public void inputCheckInDate(String date) {
-        WebElement checkIn = driver.findElement(checkInField);
-        checkIn.clear();
-        checkIn.sendKeys(date);
-    }
-
-    public void inputCheckOutDate(String date) {
-        WebElement checkOut = driver.findElement(checkOutField);
-        checkOut.clear();
-        checkOut.sendKeys(date);
-    }
-
-    public void selectRoom(String option) {
-        WebElement rooms = driver.findElement(roomsDropdown);
-        rooms.click();
-        // Select option logic can be added here based on specific dropdown implementation.
-    }
-
-    public void clickCheckAvailability() {
-        driver.findElement(checkAvailabilityButton).click();
-    }
-
-    public boolean isRoomDisplayed() {
-        return !driver.findElements(roomCard).isEmpty();
-    }
-
+    /**
+     * Clicks the 'Book Now' button, typically after rooms have been displayed.
+     * Waits for the button to be clickable.
+     */
     public void clickBookNow() {
-        driver.findElement(bookNowButton).click();
+        System.out.println("Waiting for 'Book Now' button to be clickable...");
+        wait.until(ExpectedConditions.elementToBeClickable(bookNowButton)).click();
+        System.out.println("✓ Clicked 'Book Now' button.");
     }
 
+    /**
+     * Clicks the 'Request Quote' button, typically after rooms have been displayed.
+     * Waits for the button to be clickable.
+     */
     public void clickRequestQuote() {
-        driver.findElement(requestQuoteButton).click();
+        System.out.println("Waiting for 'Request Quote' button to be clickable...");
+        wait.until(ExpectedConditions.elementToBeClickable(requestQuoteButton)).click();
+        System.out.println("✓ Clicked 'Request Quote' button.");
     }
-
-    public void enterCheckInDate(String date) {
-        driver.findElement(checkInField).clear();
-        driver.findElement(checkInField).sendKeys(date);
-    }
-
-    public void enterCheckOutDate(String date) {
-        driver.findElement(checkOutField).clear();
-        driver.findElement(checkOutField).sendKeys(date);
-    }
-
-    public List<WebElement> getRoomNames() {
-        return driver.findElements(roomNames);
-    }
-
-    public List<WebElement> getRoomImages() {
-        return driver.findElements(roomImages);
-    }
-
-    public List<WebElement> getMoreButtons() {
-        return driver.findElements(moreButton);
-    }
-
-    public WebElement getAvailabilityMessage() {
-        return driver.findElement(availabilityMessage);
-    }
-
 }
-
-

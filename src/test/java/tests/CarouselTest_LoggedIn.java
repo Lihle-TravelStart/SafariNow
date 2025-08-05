@@ -29,7 +29,8 @@ public class CarouselTest_LoggedIn extends BaseTest {
 
         // Use the new, user-centric method to navigate to the homepage
         safariNowHomePage.returnToHomePageByLogo();
-        safariNowHomePage.handleCookieBanner();
+        // CORRECTED: Call the new, more robust handleOverlays() method.
+        safariNowHomePage.handleOverlays();
     }
 
     @DataProvider(name = "carouselDataProvider")

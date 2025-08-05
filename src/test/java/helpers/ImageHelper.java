@@ -9,44 +9,59 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+/**
+ * Provides robust, reusable utility methods for verifying image elements.
+ * It is designed to be flexible by handling both WebElements and By locators.
+ */
 public class ImageHelper {
 
-    private WebDriver driver;
-    private WebDriverWait wait;
+    private final WebDriver driver;
+    private final WebDriverWait wait;
 
     public ImageHelper(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(60)); // Adjust timeout as needed
+        // A shorter, more reasonable default wait for an image to be present.
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     /**
-     * Checks if an image is displayed correctly (not broken).
+     * The primary, most efficient method. Checks if a given image WebElement has loaded correctly.
+     * This is ideal when you have already located the element.
      *
-     * @param imageLocator The By locator for the image.
-     * @return True if the image exists, is visible, and is loaded correctly; false otherwise.
+     * @param imageElement The <img/> WebElement to check.
+     * @return true if the image is visible and has a naturalWidth > 0, false otherwise.
      */
-    public boolean isImageDisplayed(By imageLocator) {
+    public boolean isImageLoaded(WebElement imageElement) {
         try {
-            WebElement imageElement = wait.until(ExpectedConditions.presenceOfElementLocated(imageLocator));
-            if (!imageElement.isDisplayed()) {
-                System.err.println("Image is not visible.");
-                return false;
-            }
+            // First, ensure the element is actually visible on the page.
+            wait.until(ExpectedConditions.visibilityOf(imageElement));
 
-            // Check if the image is loaded correctly using JavaScript
-            Boolean isImageLoaded = (Boolean) ((JavascriptExecutor) driver).executeScript(
+            // Then, execute the script to check if it's a broken image.
+            Boolean imageLoaded = (Boolean) ((JavascriptExecutor) driver).executeScript(
                     "return arguments[0].complete && typeof arguments[0].naturalWidth != 'undefined' && arguments[0].naturalWidth > 0",
                     imageElement);
 
-            if (isImageLoaded) {
-                System.out.println("Image is displayed and loaded correctly.");
-                return true;
-            } else {
-                System.err.println("Image is broken or not loaded.");
-                return false;
-            }
+            return imageLoaded != null && imageLoaded;
         } catch (Exception e) {
-            System.err.println(STR."Error checking image: \{e.getMessage()}");
+            System.err.println(STR."Error checking image status for element [\{imageElement}]: \{e.getMessage()}");
+            return false;
+        }
+    }
+
+    /**
+     * A convenience method that first finds an image by its locator and then checks if it has loaded.
+     * This maintains compatibility with tests that pass locators.
+     *
+     * @param imageLocator The By locator for the image.
+     * @return true if the image is found, visible, and loaded correctly; false otherwise.
+     */
+    public boolean isImageLoaded(By imageLocator) {
+        try {
+            // Find the element using the locator, then delegate to the primary method.
+            WebElement imageElement = wait.until(ExpectedConditions.presenceOfElementLocated(imageLocator));
+            return isImageLoaded(imageElement);
+        } catch (Exception e) {
+            System.err.println(STR."Error finding or checking image with locator [\{imageLocator}]: \{e.getMessage()}");
             return false;
         }
     }
