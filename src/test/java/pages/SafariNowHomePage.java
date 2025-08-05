@@ -1,10 +1,6 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -33,16 +29,9 @@ public class SafariNowHomePage {
     @FindBy(id = "MenuItems")
     private WebElement menuItemsContainer;
 
-    /**
-     * CORRECTED: This locator is now a precise and robust CSS selector targeting the link's href attribute.
-     * It is much more reliable than matching by text.
-     */
     @FindBy(css = "#MenuItems a[href='/Logon.aspx']")
     private WebElement loginLink;
 
-    /**
-     * IMPROVED: This locator is now case-insensitive to prevent future errors.
-     */
     @FindBy(xpath = "//*[@id='MenuItems']//a[translate(normalize-space(), 'LOGOUT', 'logout')='logout']")
     private WebElement logoutLink;
 
@@ -54,9 +43,7 @@ public class SafariNowHomePage {
 
     @FindBy(id = "search-button")
     private WebElement searchButton;
-    /**
-     * ADDED: The main SafariNow logo, used to navigate back to the homepage.
-            */
+
     @FindBy(css = "#MenuLogo > a")
     private WebElement logoLink;
 
@@ -74,15 +61,11 @@ public class SafariNowHomePage {
         driver.get(url);
         System.out.println(STR."Navigating to: \{url}");
     }
-    /**
-     * ADDED: A user-centric way to return to the homepage.
-     * Clicks the main site logo.
-     */
+
     public void returnToHomePageByLogo() {
         wait.until(ExpectedConditions.elementToBeClickable(logoLink)).click();
         System.out.println("✓ Navigated to homepage by clicking the logo.");
     }
-
 
     public void handleCookieBanner() {
         try {
@@ -103,35 +86,33 @@ public class SafariNowHomePage {
     }
 
     public void clickLoginLink() {
-        wait.until(ExpectedConditions.visibilityOf(menuItemsContainer));
-        wait.until(ExpectedConditions.elementToBeClickable(loginLink)).click();
-        System.out.println("✓ Clicked 'Login' link.");
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#MenuItems a[href='/Logon.aspx']")));
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].click();", loginLink);
+            System.out.println("✓ Clicked 'Login' link via JavaScript.");
+        } catch (Exception e) {
+            System.err.println("Failed to click login link. Trying a standard click as a fallback...");
+            wait.until(ExpectedConditions.elementToBeClickable(loginLink)).click();
+            System.out.println("✓ Clicked 'Login' link via standard click.");
+        }
     }
 
     public void clickLogoutLink() {
         wait.until(ExpectedConditions.visibilityOf(menuItemsContainer));
         wait.until(ExpectedConditions.elementToBeClickable(logoutLink)).click();
         System.out.println("✓ Clicked 'Logout' link.");
-        // After logout, confirm by waiting for the login link to be visible again.
         wait.until(ExpectedConditions.visibilityOf(loginLink));
     }
 
     // --- Search Actions (Complete Implementation) ---
 
-    /**
-     * Enters the given text into the destination search input field.
-     * @param destination The text to enter.
-     */
     public void enterDestination(String destination) {
         wait.until(ExpectedConditions.visibilityOf(destinationInput)).clear();
         destinationInput.sendKeys(destination);
         System.out.println(STR."Entered destination: \{destination}");
     }
 
-    /**
-     * Waits for the autocomplete suggestions to appear and selects the one matching the text.
-     * @param suggestionText The exact text of the suggestion to select.
-     */
     public void selectSuggestion(String suggestionText) {
         try {
             wait.until(ExpectedConditions.visibilityOfAllElements(destinationSuggestions));
@@ -146,19 +127,11 @@ public class SafariNowHomePage {
         }
     }
 
-    /**
-     * Clicks the main search button to submit the search.
-     */
     public void clickSearchButton() {
         wait.until(ExpectedConditions.elementToBeClickable(searchButton)).click();
         System.out.println("Clicked 'Search' button.");
     }
 
-    /**
-     * Performs a complete search action from entering the destination to clicking search.
-     * This is the high-level business method used by your tests.
-     * @param destination The destination to search for.
-     */
     public void performSearch(String destination) {
         System.out.println(STR."--- Performing search for: \{destination} ---");
         enterDestination(destination);
@@ -166,33 +139,52 @@ public class SafariNowHomePage {
         clickSearchButton();
     }
 
-    // --- Carousel Locators and Methods ---
+    // --- Carousel Locators and Methods (IMPROVED) ---
 
+    /**
+     * IMPROVED: Finds the carousel container using a more flexible XPath.
+     * It looks for the swiper container that is a general sibling following the h3 title,
+     * which is more robust against minor changes in the HTML structure.
+     */
     public By getCarouselContainerByLabel(String labelText) {
-        return By.xpath(String.format("//h3[normalize-space()='%s']/following-sibling::div[contains(@id, '-swiperContainer')]", labelText));
+        return By.xpath(String.format("//h3[normalize-space()='%s']/following::div[contains(@id, '-swiperContainer')][1]", labelText));
     }
 
+    /**
+     * IMPROVED: Finds the 'Next' button within the context of the general sibling carousel.
+     */
     public By getCarouselNextButtonByLabel(String labelText) {
-        return By.xpath(String.format("//h3[normalize-space()='%s']/following-sibling::div//div[contains(@class, 'swiper-button-next')]", labelText));
+        return By.xpath(String.format("//h3[normalize-space()='%s']/following::div[contains(@class, 'swiper-button-next')][1]", labelText));
     }
 
+    /**
+     * IMPROVED: Finds the 'Previous' button within the context of the general sibling carousel.
+     */
     public By getCarouselPrevButtonByLabel(String labelText) {
-        return By.xpath(String.format("//h3[normalize-space()='%s']/following-sibling::div//div[contains(@class, 'swiper-button-prev')]", labelText));
+        return By.xpath(String.format("//h3[normalize-space()='%s']/following::div[contains(@class, 'swiper-button-prev')][1]", labelText));
     }
 
+    /**
+     * IMPROVED: Finds the visible, non-duplicate carousel items using the more flexible XPath.
+     */
     public By getCarouselItemsByLabel(String labelText) {
-        return By.xpath(String.format("//h3[normalize-space()='%s']/following-sibling::div[contains(@id, '-swiperContainer')]//div[contains(@class, 'swiper-slide') and not(contains(@class, 'swiper-slide-duplicate')) and string-length(normalize-space(.)) > 0 and not(contains(@style, 'display: none')) and not(contains(@aria-hidden, 'true'))]", labelText));
+        return By.xpath(String.format("//h3[normalize-space()='%s']/following::div[contains(@id, '-swiperContainer')][1]//div[contains(@class, 'swiper-slide') and not(contains(@class, 'swiper-slide-duplicate')) and string-length(normalize-space(.)) > 0 and not(contains(@style, 'display: none')) and not(contains(@aria-hidden, 'true'))]", labelText));
     }
 
     public boolean isCarouselPresent(String carouselName) {
         By containerLocator = getCarouselContainerByLabel(carouselName);
         By itemsLocator = getCarouselItemsByLabel(carouselName);
         try {
+            // Add a small explicit wait right after scrolling to give the DOM time to update.
+            Thread.sleep(500); // 0.5 second pause
             WebElement container = wait.until(ExpectedConditions.visibilityOfElementLocated(containerLocator));
             List<WebElement> items = driver.findElements(itemsLocator);
             return container.isDisplayed() && !items.isEmpty();
         } catch (TimeoutException | NoSuchElementException e) {
             System.err.println(STR."Carousel '\{carouselName}' not found or not visible: \{e.getMessage()}");
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             return false;
         }
     }

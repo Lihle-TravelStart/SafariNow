@@ -49,7 +49,15 @@ public class CarouselTest_LoggedOut {
                 {"Deals and Offers"},
                 {"Popular Destinations"},
                 {"Weekend Getaways"},
-                {"Explore the Garden Route"}
+                {"City Trips"},
+                {"Kwazulu-Natal Beach Escapes"},
+                {"Wildlife Adventures"},
+                {"Explore the Garden Route"},
+                {"Amazing Country Escapes"},
+                {"West Coast Getaways"},
+                {"Discover the Winelands"},
+                {"Incredible Road Trips"},
+                {"Stop Overs"}
         };
     }
 

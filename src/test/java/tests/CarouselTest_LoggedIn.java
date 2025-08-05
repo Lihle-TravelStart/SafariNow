@@ -34,13 +34,14 @@ public class CarouselTest_LoggedIn extends BaseTest {
 
     @DataProvider(name = "carouselDataProvider")
     public Object[][] carouselDataProvider() {
-        // ... (data provider remains the same)
+        // The carousels might be different for a logged-in user. Adjust as needed.
         return new Object[][]{
                 {"Deals and Offers"},
                 {"Popular Destinations"},
                 {"Weekend Getaways"},
                 {"City Trips"},
-                {"KwaZulu-Natal Beach Escapes"},
+                // CORRECTED: Changed 'Z' to 'z' to match the website's actual text.
+                {"Kwazulu-Natal Beach Escapes"},
                 {"Wildlife Adventures"},
                 {"Explore the Garden Route"},
                 {"Amazing Country Escapes"},
@@ -59,7 +60,7 @@ public class CarouselTest_LoggedIn extends BaseTest {
 
     /**
      * Reusable helper method to perform the actual carousel checks.
-     * FIXED: This method now robustly handles lazy-loaded content by scrolling
+     * This method now robustly handles lazy-loaded content by scrolling
      * the carousel title into view before performing any checks.
      */
     private void performCarouselChecks(String carouselName) {
@@ -78,7 +79,7 @@ public class CarouselTest_LoggedIn extends BaseTest {
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'smooth'});", titleElement);
         System.out.println(STR."✓ Scrolled '\{carouselName}' into view.");
 
-        // Step 3: NOW, verify the carousel is present. This should no longer time out.
+        // Step 3: NOW, verify the carousel is present.
         boolean isPresent = safariNowHomePage.isCarouselPresent(carouselName);
         Assert.assertTrue(isPresent, STR."Carousel '\{carouselName}' should be present but was not found AFTER scrolling into view.");
 
