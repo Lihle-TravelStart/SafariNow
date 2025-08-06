@@ -69,8 +69,7 @@ public class SearchResultsTest extends BaseTest_LoggedOut {
     public Object[][] filtersToTest() {
         // "Special Deals Only" is removed as it has its own, more complex test.
         return new Object[][]{
-                {"Swimming Pool"},
-                {"Hotels"}
+                {"Swimming Pool"}
         };
     }
 

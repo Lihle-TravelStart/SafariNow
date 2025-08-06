@@ -1,0 +1,53 @@
+{
+  "environments": {
+    "production": {
+      "baseUrl": "https://www.safarinow.com/"
+    },
+    "staging": {
+      "baseUrl": "https://staging.safarinow.com/"
+    }
+  },
+  "configuration": {
+    "timeouts": {
+      "defaultWait": 15,
+      "longWait": 30
+    }
+  },
+  "selectors": {
+    "homePage": {
+      "destinationInput": "#dest"
+    }
+  },
+  "testDestinations": [
+    {
+      "name": "Cape Town",
+      "type": "City",
+      "expectedMinProperties": 100,
+      "priority": "high"
+    },
+    {
+      "name": "Kruger National Park",
+      "type": "Region",
+      "expectedMinProperties": 50,
+      "priority": "high"
+    },
+    {
+      "name": "Durban",
+      "type": "City",
+      "expectedMinProperties": 80,
+      "priority": "low"
+    }
+  ],
+  "testScenarios": [
+    {
+      "scenarioName": "Standard Booking",
+      "description": "A standard user booking flow.",
+      "steps": [
+        "Search for destination",
+        "Select property",
+        "Enter dates",
+        "Confirm booking"
+      ]
+    }
+  ]
+}

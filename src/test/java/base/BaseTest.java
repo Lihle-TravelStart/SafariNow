@@ -78,7 +78,10 @@ public abstract class BaseTest {
     private void waitForLoginCompletion() {
         try {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-            By userNameLocator = By.xpath("//*[@id='MenuAccount']//a[contains(., 'Lihle')]");
+            // --- THE FIX: This locator is more robust and less brittle ---
+            // It finds the account menu element and verifies the text 'Lihle' exists anywhere inside it.
+            By userNameLocator = By.xpath("//*[@id='MenuAccount' and contains(., 'Lihle')]");
+            // --- END FIX ---
             System.out.println("Waiting for user's name to appear to confirm login session is active...");
             wait.until(ExpectedConditions.visibilityOfElementLocated(userNameLocator));
             System.out.println("✓ User's name is visible. Login state confirmed.");

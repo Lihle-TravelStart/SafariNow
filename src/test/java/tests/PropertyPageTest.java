@@ -12,7 +12,6 @@ import pages.PropertyPage;
 import pages.SafariNowHomePage;
 
 @Test(groups = {"property"})
-// CORRECTED: This test is for a logged-out user flow.
 public class PropertyPageTest extends BaseTest_LoggedOut {
 
     private SafariNowHomePage homePage;
@@ -43,7 +42,7 @@ public class PropertyPageTest extends BaseTest_LoggedOut {
     }
 
     /**
-     * REFACTORED: This private helper method contains all the common steps
+     * This private helper method contains all the common steps
      * for searching, selecting a property, and checking its availability.
      * This eliminates code duplication and makes the tests much cleaner.
      */
