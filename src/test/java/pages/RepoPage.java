@@ -29,10 +29,10 @@ public class RepoPage {
     @FindBy(xpath = "//button[contains(., 'Refresh Seller')]")
     private WebElement refreshSellerBtn;
 
-    @FindBy(xpath = "//button[contains(., 'Refresh Mongo')]")
+    @FindBy(xpath = "//button[contains(., 'Mongo Repo')]")
     private WebElement refreshMongoBtn;
 
-    @FindBy(xpath = "//button[contains(., 'Refresh Specials')]")
+    @FindBy(xpath = "//button[contains(., 'Refresh Special')]")
     private WebElement refreshSpecialsBtn;
 
     @FindBy(tagName = "body")
