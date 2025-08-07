@@ -4,7 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <!-- FIX: Using a more professional and specific groupId -->
+    <groupId>com.safarinow</groupId>
     <artifactId>SafariNow</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -12,7 +13,6 @@
         <maven.compiler.source>22</maven.compiler.source>
         <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Updated versions for Chrome 137 compatibility -->
         <selenium.version>4.27.0</selenium.version>
         <webdrivermanager.version>5.9.2</webdrivermanager.version>
         <testng.version>7.10.2</testng.version>
@@ -23,10 +23,13 @@
         <dotenv.version>3.0.2</dotenv.version>
         <lombok.version>1.18.36</lombok.version>
         <json.version>20240303</json.version>
+        <!-- Added version property for commons-io -->
+        <commons-io.version>2.16.1</commons-io.version>
+        <commons-lang3.version>3.15.0</commons-lang3.version>
     </properties>
 
     <dependencies>
-        <!-- Updated Selenium with Chrome 137 support -->
+        <!-- Selenium WebDriver -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -112,13 +115,22 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Apache Commons for utilities -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <!-- FIX: Added Apache Commons IO for file utilities (e.g., screenshots) -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -130,8 +142,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>22</source>
-                    <target>22</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
@@ -151,25 +163,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
-                    <!--
-                     THE FIX: This line ensures the build will fail if any
-                     tests fail. It makes this behavior the default for the project.
-                   -->
                     <testFailureIgnore>false</testFailureIgnore>
-
                     <argLine>--enable-preview</argLine>
                     <systemPropertyVariables>
                         <org.slf4j.simpleLogger.defaultLogLevel>warn</org.slf4j.simpleLogger.defaultLogLevel>
                     </systemPropertyVariables>
-                    <!-- Configure for TestNG -->
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                        <!-- FIX: Pointing to the conventional location in the project root -->
+                        <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <!-- Fallback: run tests by pattern if no testng.xml -->
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/Test*.java</include>
-                    </includes>
                 </configuration>
             </plugin>
         </plugins>
