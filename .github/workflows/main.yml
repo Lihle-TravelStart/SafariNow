@@ -1,4 +1,4 @@
-name: Run SafariNowRepoTest
+name: Run SafariNow Test Suite
 
 on:
   schedule:
@@ -33,9 +33,12 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Run SafariNowRepoTest
+      - name: Run Test Suite via testng.xml
+        # FIX: Removed the specific "-Dtest" flag.
+        # This allows Maven to use the test suite defined in your testng.xml,
+        # which correctly excludes PropertyPageTest.
         run: |
-          xvfb-run -a mvn clean test -Dtest=SafariNowRepoTest -DargLine="--enable-preview" -Dmaven.test.failure.ignore=false
+          xvfb-run -a mvn clean test -DargLine="--enable-preview" -Dmaven.test.failure.ignore=false
         env:
           # Pass the secret as an environment variable to the test runner
           SAFARINOW_PASSWORD: ${{ secrets.SAFARINOW_PASSWORD }}

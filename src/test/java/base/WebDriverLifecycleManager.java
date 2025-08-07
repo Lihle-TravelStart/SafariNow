@@ -1,76 +1,94 @@
-// In: base/WebDriverLifecycleManager.java
 package base;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 /**
- * A centralized manager for the lifecycle of all WebDriver instances.
- * It tracks all active drivers and ensures they are all terminated
- * via a JVM shutdown hook, preventing orphaned browser windows.
+ * A singleton manager for the WebDriver lifecycle, ensuring only one
+ * instance is created per test suite run.
  */
-public final class WebDriverLifecycleManager {
+public class WebDriverLifecycleManager {
 
-    // A thread-safe list to hold all active WebDriver instances.
-    private static final List<WebDriver> activeDrivers = Collections.synchronizedList(new ArrayList<>());
+    private static WebDriver driverInstance;
 
-    // A single, universal shutdown hook.
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread(WebDriverLifecycleManager::quitAllDrivers));
-    }
-
-    // Private constructor to prevent instantiation.
+    // Private constructor to prevent direct instantiation.
     private WebDriverLifecycleManager() {}
 
     /**
-     * Registers a new WebDriver instance to be tracked.
-     * This should be called immediately after a driver is created.
-     *
-     * @param driver The WebDriver instance to track.
+     * Initializes the singleton WebDriver instance. Throws an error if called more than once.
      */
-    public static void register(WebDriver driver) {
-        if (driver != null) {
-            activeDrivers.add(driver);
-        }
-    }
-
-    /**
-     * Quits a specific WebDriver instance and removes it from tracking.
-     * This is the standard method for clean teardown.
-     *
-     * @param driver The WebDriver instance to quit.
-     */
-    public static void quitDriver(WebDriver driver) {
-        if (driver == null) {
+    public static synchronized void initDriver() {
+        if (driverInstance != null) {
+            System.err.println("WARN: initDriver called but a driver instance already exists.");
             return;
         }
-        try {
-            System.out.println(STR."LifecycleManager: Cleaning up driver \{driver.hashCode()}");
-            driver.quit();
-        } catch (Exception e) {
-            System.err.println(STR."LifecycleManager: Error during WebDriver quit: \{e.getMessage()}");
-        } finally {
-            activeDrivers.remove(driver);
-        }
+        System.out.println("=== Initializing WebDriver for the test suite. ===");
+        WebDriverManager.chromedriver().setup();
+        driverInstance = new ChromeDriver(configureChromeOptions());
+        setupWindowSize();
+        System.out.println("✓ New WebDriver instance created and configured.");
     }
 
     /**
-     * The failsafe method called by the shutdown hook.
-     * It iterates through any remaining drivers that were not cleanly
-     * closed and forcefully terminates them.
+     * Retrieves the singleton WebDriver instance.
+     * @return The shared WebDriver instance.
+     * @throws IllegalStateException if the driver has not been initialized by the SuiteListener.
      */
-    private static void quitAllDrivers() {
-        if (!activeDrivers.isEmpty()) {
-            System.out.println(STR."Shutdown Hook: Forcing cleanup of \{activeDrivers.size()} remaining WebDriver instance(s)...");
-            // Create a copy to avoid ConcurrentModificationException while iterating
-            List<WebDriver> driversToQuit = new ArrayList<>(activeDrivers);
-            for (WebDriver driver : driversToQuit) {
-                quitDriver(driver);
-            }
-            System.out.println("Shutdown Hook: All remaining drivers terminated.");
+    public static synchronized WebDriver getDriver() {
+        if (driverInstance == null) {
+            throw new IllegalStateException("WebDriver has not been initialized. Please ensure the SuiteListener is configured in your testng.xml.");
         }
+        return driverInstance;
+    }
+
+    /**
+     * Quits the singleton WebDriver instance if it exists.
+     */
+    public static synchronized void quitDriver() {
+        if (driverInstance != null) {
+            try {
+                System.out.println(STR."LifecycleManager: Cleaning up WebDriver instance \{driverInstance.hashCode()}");
+                driverInstance.quit();
+            } catch (Exception e) {
+                System.err.println(STR."Error while quitting driver: \{e.getMessage()}");
+            } finally {
+                driverInstance = null;
+            }
+        }
+    }
+
+    // --- Private Helper Methods ---
+
+    private static ChromeOptions configureChromeOptions() {
+        ChromeOptions options = new ChromeOptions();
+        if (isHeadlessEnvironment()) {
+            options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1920,1080");
+        }
+        options.addArguments("--disable-web-security", "--disable-features=VizDisplayCompositor", "--remote-debugging-port=9222", "--disable-blink-features=AutomationControlled");
+        options.setExperimentalOption("useAutomationExtension", false);
+        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+        return options;
+    }
+
+    private static void setupWindowSize() {
+        try {
+            if (!isHeadlessEnvironment()) {
+                driverInstance.manage().window().maximize();
+                System.out.println("✓ Window maximized");
+            }
+        } catch (WebDriverException e) {
+            System.out.println(STR."Window maximize failed, using manual sizing: \{e.getMessage()}");
+            driverInstance.manage().window().setSize(new Dimension(1920, 1080));
+        }
+    }
+
+    private static boolean isHeadlessEnvironment() {
+        return System.getenv("CI") != null ||
+                System.getenv("GITHUB_ACTIONS") != null ||
+                Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
     }
 }

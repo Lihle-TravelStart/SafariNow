@@ -151,6 +151,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
                 <configuration>
+                    <!--
+                     THE FIX: This line ensures the build will fail if any
+                     tests fail. It makes this behavior the default for the project.
+                   -->
+                    <testFailureIgnore>false</testFailureIgnore>
+
                     <argLine>--enable-preview</argLine>
                     <systemPropertyVariables>
                         <org.slf4j.simpleLogger.defaultLogLevel>warn</org.slf4j.simpleLogger.defaultLogLevel>

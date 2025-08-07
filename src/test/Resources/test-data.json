@@ -32,7 +32,7 @@
       "priority": "high"
     },
     {
-      "name": "Durban",
+      "name": "Pretoria",
       "type": "City",
       "expectedMinProperties": 80,
       "priority": "low"

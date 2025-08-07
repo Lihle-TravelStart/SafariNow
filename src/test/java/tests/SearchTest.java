@@ -40,7 +40,7 @@ public class SearchTest extends BaseTest_LoggedOut {
     public Object[][] searchDestinations() {
         return new Object[][]{
                 {"Cape Town"},
-                {"Durban"},
+                {"Pretoria"},
                 {"Johannesburg"}
         };
     }

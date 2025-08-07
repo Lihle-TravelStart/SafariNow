@@ -1,14 +1,12 @@
 package base;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeClass;
 import pages.LoginPage;
 import pages.RepoPage;
 import pages.SafariNowHomePage;
@@ -18,47 +16,43 @@ import java.util.Base64;
 
 /**
  * Manages the test suite lifecycle for LOGGED-IN tests.
- * It now uses the WebDriverLifecycleManager for robust cleanup.
+ * It now gets the driver from the central WebDriverLifecycleManager.
  */
 public abstract class BaseTest {
 
-    protected static WebDriver driver;
+    protected WebDriver driver;
 
-    @BeforeSuite(alwaysRun = true)
-    public void suiteSetup() {
-        System.out.println("=== STARTING SUITE SETUP ===");
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver(configureChromeOptions());
-        // Register the driver with the lifecycle manager
-        WebDriverLifecycleManager.register(driver);
-
-        setupWindowSize();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        System.out.println("✓ WebDriver setup complete");
+    @BeforeClass(alwaysRun = true)
+    public void loggedInSetup() {
+        System.out.println("=== STARTING LOGGED-IN CLASS SETUP ===");
+        this.driver = WebDriverLifecycleManager.getDriver();
 
         try {
             performLoginAndVerification();
-            System.out.println("✓ Suite setup completed successfully");
+            System.out.println("✓ Logged-in class setup completed successfully");
         } catch (Exception e) {
             System.err.println("✗ Critical setup failure: " + e.getMessage());
-            // Use the manager to clean up
-            WebDriverLifecycleManager.quitDriver(driver);
-            Assert.fail(STR."Critical setup failure during login, cannot continue tests: \{e.getMessage()}", e);
+            Assert.fail(STR."Critical setup failure during login for this class: \{e.getMessage()}", e);
         }
     }
 
-    @AfterSuite(alwaysRun = true)
-    public void suiteTeardown() {
-        // Delegate cleanup to the lifecycle manager
-        WebDriverLifecycleManager.quitDriver(driver);
-    }
-
+    /**
+     * FIX: This method is now idempotent. It first checks if a login is
+     * necessary before attempting the login flow.
+     */
     private void performLoginAndVerification() {
+        // First, check if we are already logged in.
+        if (isUserLoggedIn()) {
+            System.out.println("✓ User is already logged in. Skipping login sequence.");
+            return; // Exit the method early
+        }
+
+        // If not logged in, proceed with the full login sequence.
+        System.out.println("User is not logged in. Starting login sequence...");
         SafariNowHomePage homePage = new SafariNowHomePage(driver);
         LoginPage loginPage = new LoginPage(driver);
 
         homePage.navigateToUrl("https://www.safarinow.com");
-        // CORRECTED: Call the new, more robust handleOverlays() method.
         homePage.handleOverlays();
         homePage.clickMenuAccount();
         homePage.clickLoginLink();
@@ -75,13 +69,28 @@ public abstract class BaseTest {
         System.out.println("✓ Login successful and correctly navigated to RepoRefresh page. Proceeding with tests.");
     }
 
+    /**
+     * A helper method to safely check for the presence of an element
+     * that only appears when a user is logged in.
+     * @return true if the user is logged in, false otherwise.
+     */
+    private boolean isUserLoggedIn() {
+        try {
+            // Use a very short wait to avoid slowing down the tests.
+            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(2));
+            // This is the same reliable locator we use to confirm login.
+            By userNameLocator = By.xpath("//*[@id='MenuAccount' and contains(., 'Lihle')]");
+            shortWait.until(ExpectedConditions.visibilityOfElementLocated(userNameLocator));
+            return true; // If the element is found, the user is logged in.
+        } catch (TimeoutException e) {
+            return false; // If the element is not found after 2 seconds, the user is not logged in.
+        }
+    }
+
     private void waitForLoginCompletion() {
         try {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-            // --- THE FIX: This locator is more robust and less brittle ---
-            // It finds the account menu element and verifies the text 'Lihle' exists anywhere inside it.
             By userNameLocator = By.xpath("//*[@id='MenuAccount' and contains(., 'Lihle')]");
-            // --- END FIX ---
             System.out.println("Waiting for user's name to appear to confirm login session is active...");
             wait.until(ExpectedConditions.visibilityOfElementLocated(userNameLocator));
             System.out.println("✓ User's name is visible. Login state confirmed.");
@@ -110,34 +119,5 @@ public abstract class BaseTest {
         }
         byte[] decodedBytes = Base64.getDecoder().decode(encodedPassword);
         return new String(decodedBytes);
-    }
-
-    private ChromeOptions configureChromeOptions() {
-        ChromeOptions options = new ChromeOptions();
-        if (isHeadlessEnvironment()) {
-            options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1920,1080");
-        }
-        options.addArguments("--disable-web-security", "--disable-features=VizDisplayCompositor", "--remote-debugging-port=9222", "--disable-blink-features=AutomationControlled");
-        options.setExperimentalOption("useAutomationExtension", false);
-        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
-        return options;
-    }
-
-    private void setupWindowSize() {
-        try {
-            if (!isHeadlessEnvironment()) {
-                driver.manage().window().maximize();
-                System.out.println("✓ Window maximized");
-            }
-        } catch (WebDriverException e) {
-            System.out.println(STR."Window maximize failed, using manual sizing: \{e.getMessage()}");
-            driver.manage().window().setSize(new Dimension(1920, 1080));
-        }
-    }
-
-    private boolean isHeadlessEnvironment() {
-        return System.getenv("CI") != null ||
-                System.getenv("GITHUB_ACTIONS") != null ||
-                Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
     }
 }

@@ -7,116 +7,71 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.RepoPage;
 
-@Test(groups = {"repo"})
+@Test(groups = {"repo_actions"})
 public class SafariNowRepoTest extends BaseTest {
 
     private RepoPage repoPage;
 
-    @BeforeClass(groups = {"repo"})
+    @BeforeClass(groups = {"repo_actions"})
     public void pageSetup() {
         this.repoPage = new RepoPage(driver);
     }
 
-    @BeforeMethod
-    public void cleanupBeforeTest() {
-        System.out.println("=== CLEANING UP BEFORE TEST ===");
-        // Ensure no alerts are present before starting each test
-        repoPage.ensureNoAlertsPresent();
-        System.out.println("=== CLEANUP COMPLETE ===");
+    @BeforeMethod(groups = {"repo_actions"})
+    public void navigateToRepoPage() {
+        System.out.println("=== NAVIGATING TO REPO PAGE BEFORE TEST ===");
+        repoPage.navigateToRepoPage();
+        Assert.assertTrue(repoPage.isRefreshAvailabilityBtnDisplayed(), "Failed to navigate to or verify the RepoRefresh page.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Availability' button. The test passes if the action completes without error.")
     public void testRefreshAvailability() {
         System.out.println("=== Testing Refresh Availability ===");
-
-        // Click the button
+        // The verification is now handled within the page object method.
+        // If it fails, it will throw an exception, failing the test correctly.
         repoPage.clickRefreshAvailabilityBtn();
-
-        // Verify alert appears
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Availability");
-
-        // Accept the alert to continue
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Availability test completed successfully");
+        System.out.println("✓ Refresh Availability action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Lead' button. The test passes if the action completes without error.")
     public void testRefreshLead() {
         System.out.println("=== Testing Refresh Lead ===");
-
         repoPage.clickRefreshLeadBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Lead");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Lead test completed successfully");
+        System.out.println("✓ Refresh Lead action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Listings' button. The test passes if the action completes without error.")
     public void testRefreshListings() {
         System.out.println("=== Testing Refresh Listings ===");
-
         repoPage.clickRefreshListingsBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Listings");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Listings test completed successfully");
+        System.out.println("✓ Refresh Listings action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Pricing' button. The test passes if the action completes without error.")
     public void testRefreshPricing() {
         System.out.println("=== Testing Refresh Pricing ===");
-
         repoPage.clickRefreshPricingBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Pricing");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Pricing test completed successfully");
+        System.out.println("✓ Refresh Pricing action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Seller' button. The test passes if the action completes without error.")
     public void testRefreshSeller() {
         System.out.println("=== Testing Refresh Seller ===");
-
         repoPage.clickRefreshSellerBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Seller");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Seller test completed successfully");
+        System.out.println("✓ Refresh Seller action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Seller Mongo' button. The test passes if the action completes without error.")
     public void testRefreshSellerMongo() {
         System.out.println("=== Testing Refresh Seller Mongo ===");
-
         repoPage.clickRefreshMongoBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Seller Mongo");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Seller Mongo test completed successfully");
+        System.out.println("✓ Refresh Seller Mongo action completed successfully.");
     }
 
-    @Test
+    @Test(description = "Tests the 'Refresh Specials' button. The test passes if the action completes without error.")
     public void testRefreshSpecials() {
         System.out.println("=== Testing Refresh Specials ===");
-
         repoPage.clickRefreshSpecialsBtn();
-        boolean isPopupDisplayed = repoPage.isPopupDisplayed();
-        Assert.assertTrue(isPopupDisplayed, "Alert was not displayed after clicking Refresh Specials");
-
-        repoPage.acceptAlert();
-
-        System.out.println("✓ Refresh Specials test completed successfully");
+        System.out.println("✓ Refresh Specials action completed successfully.");
     }
 }

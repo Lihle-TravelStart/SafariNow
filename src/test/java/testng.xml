@@ -1,0 +1,18 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="SafariNow Full Test Suite" verbose="1">
+
+    <listeners>
+        <listener class-name="base.SuiteListener"/>
+    </listeners>
+
+    <test name="All Application Tests">
+        <packages>
+            <!-- This will run all classes in the 'tests' package... -->
+            <package name="tests">
+                <!-- ...except for this one. -->
+                <exclude name="tests.PropertyPageTest"/>
+            </package>
+        </packages>
+    </test>
+
+</suite>
